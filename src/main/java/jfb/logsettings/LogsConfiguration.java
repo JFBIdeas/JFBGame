@@ -1,7 +1,7 @@
 package jfb.logsettings;
 
 import java.io.BufferedWriter;
-import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -12,8 +12,8 @@ import java.util.Arrays;
 public class LogsConfiguration {
     private static LogsConfiguration logging;
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss, yyyy.MM.dd");
-    private static final Path PATH_TO_LOG_FILE = Path.of("/srs/log/");
-    private static final Path PATH_TO_DIRECTORY_LOG = Path.of("/srs/log");
+    private static final Path PATH_TO_DIRECTORY_LOG = Path.of("src/log");
+    private static final Path PATH_TO_LOG_FILE = Path.of(PATH_TO_DIRECTORY_LOG + "/log.txt");
 
     public static LogsConfiguration getInstance() {
         synchronized (LogsConfiguration.class) {
@@ -22,23 +22,33 @@ public class LogsConfiguration {
     }
 
     public static void writeLog(String message) {
-        File file = Files.exists(PATH_TO_LOG_FILE) ? PATH_TO_LOG_FILE.toFile() : new File(PATH_TO_LOG_FILE.toString());
+        try {
+            if (!Files.exists(PATH_TO_DIRECTORY_LOG)) {
+                Files.createDirectories(PATH_TO_DIRECTORY_LOG);
+            }
 
-        try (BufferedWriter fileWriter = Files.newBufferedWriter(LOG_FILE.toPath(), StandardOpenOption.APPEND)) {
+            if (!Files.exists(PATH_TO_LOG_FILE)) {
+                Files.createFile(PATH_TO_LOG_FILE);
+            }
 
-            int stringCount = Files.readAllLines(LOG_FILE.toPath()).size() + 1;
+            try (BufferedWriter fileWriter = Files.newBufferedWriter(PATH_TO_LOG_FILE, StandardOpenOption.APPEND)) {
 
-            if (stringCount > 15000) { deleteLog(); }
+                int stringCount = Files.readAllLines(PATH_TO_LOG_FILE).size() + 1;
 
-            fileWriter.write(stringCount + " - " + "{" + TIME_FORMATTER.format(LocalDateTime.now()) + "} " + message + "\n");
+                if (stringCount > 15000) {
+                    stringCount = 1;
+                    deleteLog();
+                }
 
-        } catch (Exception e) { e.printStackTrace(); }
+                fileWriter.write(stringCount + " - " + "{" + TIME_FORMATTER.format(LocalDateTime.now()) + "} " + message + "\n");
+            }
+        } catch (IOException exception) { exception.printStackTrace(); }
     }
 
     private static void deleteLog() {
         try {
-            Files.newBufferedWriter(LOG_FILE.toPath(), StandardOpenOption.TRUNCATE_EXISTING);
-        } catch (Exception e) { e.printStackTrace(); }
+            Files.newBufferedWriter((PATH_TO_LOG_FILE), StandardOpenOption.TRUNCATE_EXISTING);
+        } catch (IOException e) { e.printStackTrace(); }
     }
 
     public static void writeExceptionStackTraceInLogFile(StackTraceElement[] stackTraceElements) {
