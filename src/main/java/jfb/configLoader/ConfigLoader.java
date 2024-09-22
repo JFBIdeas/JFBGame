@@ -1,24 +1,18 @@
 package jfb.configLoader;
 
-import jfb.exception.NotFoundFileException;
-
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 public class ConfigLoader {
-    public static ConfigProperties loadConfig(String fileName) {
-        ConfigProperties configProperties = new ConfigProperties();
+    public static String loadConfig(String keyName) {
         Properties properties = new Properties();
-        String rootPath ="src/main/resources/";
-        String appConfigPath = rootPath + fileName;
-        try {
-            properties.load(new FileInputStream(appConfigPath));
-            configProperties.setTest(properties.toString());
-            return configProperties;
-        } catch (IOException e) {
-            throw new NotFoundFileException("Файл не найден!" + fileName);
+        try (InputStream input = new FileInputStream("src/main/resources/application.properties")) {
+            properties.load(input);
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
+        return properties.getProperty(keyName);
     }
-
 }
