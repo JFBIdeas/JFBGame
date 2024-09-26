@@ -4,7 +4,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class ConfigLoaderTest {
-
+    /**
+     *Тестируем метод по позитивному сценарию, который возвращает параметры по ключу
+     * @see ConfigLoader#loadConfig(String)
+     * Передаем в метод ключ "test", метод должен вернуть параметр совпадающий со
+     * сравниваемой строкой "\"Checking the work with the file .properties\"
+     */
     @Test
     void loadConfigPositiveTest() {
         //date
@@ -15,6 +20,11 @@ class ConfigLoaderTest {
         //check
         Assertions.assertEquals(expected, actual);
     }
+    /**
+     *Тестируем метод по негативному сценарию, который возвращает параметры по ключу
+     * @see ConfigLoader#loadConfig(String)
+     * Передаем в метод ключ " "(пустую строку), метод должен вернуть параметр null
+     */
     @Test
     void loadConfigNegativeTest() {
         //date
