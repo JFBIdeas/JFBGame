@@ -4,59 +4,42 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public class TailMap{
-    //двумерный массив, что принимает в аргумент путь до файла, что нужно распарсить
-    Integer[][] loadMap(String fileName) {
+public class TailMap {
+
+    public int[][] loadMap(String fileName) {
         List<List<Integer>> listTailMap = new ArrayList<>();
-        //коллекция ЭррэйЛист, что хранит в себе значение другой коллекции с дженериком Интеджер
-
-        try (BufferedReader bufRead = new BufferedReader(new FileReader(fileName))) {
-            //блок try, в качестве аргумента принимает в себя буффер, читающий файл по переменной
-            String line;
-            //через цикл с условием, что в буффере есть данные для чтения
-            while ((line = bufRead.readLine()) != null) {
-
-                //Бьем строку по запятым
-                String[] separator = line.split(",");
-                List<Integer> listTail = new ArrayList<>();
-                //через цикл строка парсится по разделителю
-                for (String value : separator) {
-                    listTail.add(Integer.parseInt(value.trim()));
-                }
-                listTailMap.add(listTail);
-            }
+        try (BufferedReader reader = Files.newBufferedReader(Paths.get(fileName), StandardCharsets.UTF_8)) {
+            listTailMap = reader.lines()
+                    .map(line -> Stream.of(line.split(","))
+                            .map(String::trim)
+                            .map(Integer::parseInt)
+                            .collect(Collectors.toList()))
+                    .collect(Collectors.toList());
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Ошибка чтения файла: " + fileName, e);
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("Файл содержит неверные данные.", e);
         }
-        return convertListToArray(listTailMap);
+
+        return convertListToPrimitiveArray(listTailMap);
     }
 
-    private Integer[][] convertListToArray(List<List<Integer>> list) {
-        if (list.isEmpty()) return new Integer[0][0];
+    private int[][] convertListToPrimitiveArray(List<List<Integer>> list) {
+        if (list.isEmpty()) return new int[0][0];
 
-        Integer[][] array = new Integer[list.size()][list.get(0).size()];
+        int[][] array = new int[list.size()][];
         for (int i = 0; i < list.size(); i++) {
-            array[i] = list.get(i).toArray(new Integer[0]);
+            List<Integer> row = list.get(i);
+            array[i] = row.stream().mapToInt(Integer::intValue).toArray();
         }
         return array;
     }
 }
-
-
-/*      public static void main(String[] args) {
-        TailMap load = new TailMap();
-        //тут путь до файла указываем, читает .txt, с rtf какие то проблемы
-        Integer[][] map = load.loadMap("/Users/RGZ_TTT/Downloads/LOADMAP.rtf");
-        //вывод
-        for (Integer[] row : map) {
-            for (Integer value : row) {
-                System.out.print(value + " ");
-            }
-            System.out.println();
-        }
-    }
-}
-*/
