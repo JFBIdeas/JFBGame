@@ -1,15 +1,46 @@
 package jfb;
 
-import javax.swing.*;
+
+import jfb.view.Window;
+
+import java.awt.*;
 
 public class Game implements Runnable {
 
-    public Game() {}
+    Graphics2D g;
+    Window window = new Window();
 
-    public void start(){}
+    public Game() {
+        g = (Graphics2D) window.getGraphics();
+        start();
+    }
+
+    public void start(){
+        Thread gameThread = new Thread(this);
+        gameThread.start();
+    }
 
     @Override
-    public void run() {}
+    public void run() {
+        long lastTime = System.nanoTime();  //Здесь фиксируется текущее время в наносекундах на момент запуска игрового цикла.
+        // Переменная lastTime будет использоваться для измерения времени между кадрами, чтобы контролировать частоту обновления и отрисовки.
+        double amountOfTicks = 60; //Это количество "тиков" или циклов обновления в секунду, которое задает частоту выполнения игровых действий.
+        double ns = 1_000_000_000/amountOfTicks; //Это число наносекунд, которые проходят между тиками.
+        double delta = 0; //Переменная delta используется для отслеживания накопленного времени, чтобы определить, когда выполнить следующий игровой тик.
+        while (true){
+            long now = System.nanoTime(); //Фиксируется текущее время в наносекундах в каждой итерации цикла, чтобы измерить, сколько времени прошло с момента предыдущей итерации.
+            delta += (now-lastTime)/ns; //Значение delta накапливает дробное число тиков, чтобы отслеживать, когда наступит момент выполнения следующего игрового действия.
+            lastTime = now; //После вычисления delta обновляем значение lastTime, чтобы в следующей итерации отслеживать новый промежуток времени.
+            if (delta>=1){ //Если delta >= 1, это означает, что время для следующего тика пришло.
+                //поле для игровых действий
+                window.cleanUp();
+                window.paint(g);
+                window.update();
+                delta--;    //Это указывает на то, что один тик был выполнен, и если delta все еще >= 1,
+                // то в этом же цикле while будет выполнено еще одно обновление (если прошло достаточно времени).
+            }
+        }
+    }
 
 
 }

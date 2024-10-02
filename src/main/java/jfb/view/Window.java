@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 
 public class Window extends JFrame {
+
     public Window() {
     }
 
@@ -13,5 +14,8 @@ public class Window extends JFrame {
 
     public void paint (Graphics2D g){
 
+    }
+
+    public void cleanUp() {
     }
 }
